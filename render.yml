@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/signin",            "destination": "/dash/login.html" },
+    { "source": "/index",        "destination": "/dash/index.html" },
+    { "source": "/weather-input",    "destination": "/dash/weather-input.html" },
+    { "source": "/update-weather",   "destination": "/dash/update-weather.html" },
+    { "source": "/view-weather",     "destination": "/dash/view-weather.html" },
+    { "source": "/weather-by-day",   "destination": "/dash/weather-by-day.html" },
+    { "source": "/weather-by-region","destination": "/dash/weather-by-region.html" },
+    { "source": "/prediction",       "destination": "/dash/weather-prediction.html" }
+    { "source": "/forgot-password",       "destination": "/dash/forgot-password.html" }
+    { "source": "/reset-password",       "destination": "/dash/reset-password.html" }
+    { "source": "/signup",       "destination": "/dash/signup.html" }
+  ]
+}
