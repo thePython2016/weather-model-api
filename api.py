@@ -34,7 +34,7 @@ app = FastAPI(
     description="Weather Prediction API",
     # redoc_url=None,
     # docs_url=True,
-    openapi_url=None
+    # openapi_url=None
 )
 
 #   Middleware MUST 
