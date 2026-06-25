@@ -32,8 +32,8 @@ app = FastAPI(
     title="Weather Prediction API",
     version="1.0.0",
     description="Weather Prediction API",
-    redoc_url=None,
-    docs_url=None,
+    # redoc_url=None,
+    # docs_url=True,
     openapi_url=None
 )
 
