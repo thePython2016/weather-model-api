@@ -252,34 +252,31 @@ async def weatherData(data: WeatherData):
     
 # Prediction by upload
 
+import pandas as pd
+import io
+from fastapi import UploadFile, File, HTTPException
+
 @app.post('/upload-prediction/')
-async def upload_weather_data(uploaded: UploadWeatherData):
+async def upload_weather_data(file: UploadFile = File(...)):
     try:
-        # Create dataframe from input
-        file = pd.DataFrame({
-            "precipitation": [uploaded.precipitation],
-            "temp_max":      [uploaded.temp_max],
-            "temp_min":      [uploaded.temp_min],
-            "wind":          [uploaded.wind],
-            "month":         [uploaded.month],
-            "day":           [uploaded.day],
-        })
+        # Read the uploaded CSV file
+        contents = await file.read()
+        df = pd.read_csv(io.BytesIO(contents))
 
         # Encode the input
-        encoded = encoder.transform(file)
+        encoded = encoder.transform(df)
 
         # Make prediction
         prediction = model.predict(encoded)
 
         return {
-            "prediction": prediction[0],
+            "prediction": prediction.tolist(),
             "status": "success"
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
-
+    
 
 @app.get('/weather-data/')
 async def getWeatherdata():
