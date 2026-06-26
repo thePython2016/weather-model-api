@@ -43,6 +43,10 @@ app.add_middleware(
     allow_origins=[
         "https://weather-prediction-model-bfql.onrender.com",
         "http://localhost:4200",
+        "https://weather-prediction-model-with-angul.vercel.app",
+        "https://weather-model-api-30kz.onrender.com"
+
+
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -139,6 +143,16 @@ class WeatherPrediction(BaseModel):
     temperature: float
     precipitation: float
     wind: float
+
+
+class UploadWeatherData(BaseModel):
+    precipitataion:str
+    temp_max:float
+    temp_min:float
+    wind:str
+    month:str
+    day:int
+
 
 SECRET_KEY           = os.getenv("SECRET_KEY")
 ALGORITHM            = os.getenv("ALGORITHM")
@@ -328,6 +342,12 @@ async def upload(file: UploadFile = File(...)):
         return {"Message": "Added Successfully"}
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error))
+    
+
+    
+# Upload prediction
+# @app.post('/upload-prediction/')
+# async def upload(input:UploadWeatherData):
 
 
 @app.post('/prediction/')
@@ -380,18 +400,31 @@ async def accountdata(account: useraccount):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+import asyncio
+import bcrypt
+from fastapi.concurrency import run_in_threadpool
 
 @app.post("/create-user-account/")
 async def createUserAccount(account: Createuseraccount):
     try:
-        hashed_pwd = bcrypt.hashpw(account.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        insert = "INSERT INTO useraccount(fname,lname,email,phone,address,pwd) VALUES(%s,%s,%s,%s,%s,%s)"
-        cursor.execute(insert, (account.fname, account.lname, account.email,
-                                account.phone, account.address, hashed_pwd))
-        conn.commit()
+        # Run blocking bcrypt in thread pool so it doesn't freeze the event loop
+        hashed_pwd = await run_in_threadpool(
+            lambda: bcrypt.hashpw(account.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        )
+
+        # Also wrap the blocking DB call
+        def db_insert():
+            insert = "INSERT INTO useraccount(fname,lname,email,phone,address,pwd) VALUES(%s,%s,%s,%s,%s,%s)"
+            cursor.execute(insert, (account.fname, account.lname, account.email,
+                                    account.phone, account.address, hashed_pwd))
+            conn.commit()
+
+        await run_in_threadpool(db_insert)
+
         return JSONResponse(status_code=201, content={"Success": "Account Successfully Created"})
+
     except Exception as e:
-        conn.rollback()
+        await run_in_threadpool(conn.rollback)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -556,7 +589,7 @@ async def resetPassword(resetData: resetPass):
     if fetchRecord is None:
         raise HTTPException(status_code=404, detail="Token Not Found")
 
-    hashedPassword = bcrypt.hashpw(resetData.password[:72].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    hashedPassword = bcrypt.hashpw(resetData.password[:72].encode('utf-8'), bcrypt.gensalt(rounds=10)).decode('utf-8')
 
     try:
         cursor.execute(
