@@ -249,6 +249,36 @@ async def weatherData(data: WeatherData):
         return {"Precipitation": data.precipitation}
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error))
+    
+# Prediction by upload
+
+@app.post('/upload-prediction/')
+async def upload_weather_data(uploaded: UploadWeatherData):
+    try:
+        # Create dataframe from input
+        file = pd.DataFrame({
+            "precipitation": [uploaded.precipitation],
+            "temp_max":      [uploaded.temp_max],
+            "temp_min":      [uploaded.temp_min],
+            "wind":          [uploaded.wind],
+            "month":         [uploaded.month],
+            "day":           [uploaded.day],
+        })
+
+        # Encode the input
+        encoded = encoder.transform(file)
+
+        # Make prediction
+        prediction = model.predict(encoded)
+
+        return {
+            "prediction": prediction[0],
+            "status": "success"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
 
 
 @app.get('/weather-data/')
@@ -346,9 +376,7 @@ async def upload(file: UploadFile = File(...)):
     
 
     
-# Upload prediction
-# @app.post('/upload-prediction/')
-# async def upload(input:UploadWeatherData):
+
 
 
 @app.post('/prediction/')
