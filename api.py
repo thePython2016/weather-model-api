@@ -44,7 +44,8 @@ app.add_middleware(
         "https://weather-prediction-model-bfql.onrender.com",
         "http://localhost:4200",
         "https://weather-prediction-model-with-angul.vercel.app",
-        "https://weather-model-api-30kz.onrender.com"
+        "https://weather-model-api-30kz.onrender.com",
+        "https://weather-prediction-model-with-angular-8zzni8q8h.vercel.app"
 
 
     ],
